@@ -66,7 +66,26 @@ app.post('/api/auth/register', async (req, res) => {
       'INSERT INTO usuarios (email, password_hash, full_name, rol) VALUES ($1, $2, $3, $4) RETURNING id, email, full_name, rol, created_at',
       [email.toLowerCase(), passwordHash, fullName, rol]
     );
-    res.status(201).json({ message: 'Usuario registrado con éxito', user: result.rows[0] });
+    
+    const user = result.rows[0];
+
+    // Generar Token JWT para inicio de sesión automático
+    const token = jwt.sign(
+      { id: user.id, email: user.email, rol: user.rol, fullName: user.full_name },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.status(201).json({
+      message: 'Usuario registrado con éxito',
+      token: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.full_name,
+        rol: user.rol
+      }
+    });
   } catch (error) {
     console.error('❌ Error en registro de usuario:', error);
     if (error.code === '23505') {

@@ -31,7 +31,7 @@ data class LoginRequest(
 data class UserDto(
     @SerializedName("id") val id: Int,
     @SerializedName("email") val email: String,
-    @SerializedName("fullName") val fullName: String,
+    @SerializedName(value = "fullName", alternate = ["full_name"]) val fullName: String,
     @SerializedName("rol") val rol: String,
     @SerializedName("created_at") val createdAt: String? = null
 ) {
