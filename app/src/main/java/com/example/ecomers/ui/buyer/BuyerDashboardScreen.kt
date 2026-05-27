@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +33,8 @@ import com.example.ecomers.domain.model.Order
 import com.example.ecomers.domain.model.Product
 import com.example.ecomers.ui.auth.AuthViewModel
 import com.example.ecomers.ui.navigation.Screen
+import com.example.ecomers.ui.theme.MainGradientEnd
+import com.example.ecomers.ui.theme.MainGradientStart
 
 /**
  * Panel del Comprador: BuyerDashboardScreen
@@ -184,14 +188,33 @@ fun CatalogTab(
             val list = catalogState.products
             if (list.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No hay productos disponibles en este momento.")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Default.Storefront,
+                            contentDescription = null,
+                            modifier = Modifier.size(72.dp),
+                            tint = Color.Gray.copy(alpha = 0.4f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "No hay productos disponibles",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.Gray
+                        )
+                        Text(
+                            "Vuelve más tarde para ver novedades",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
                 }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(list) { product ->
@@ -208,6 +231,11 @@ fun CatalogTab(
     }
 }
 
+/**
+ * Tarjeta de Producto Premium para el Comprador
+ * Muestra: imagen de Cloudinary, nombre del producto, nombre de la tienda/vendedor,
+ * precio y botón de agregar al carrito.
+ */
 @Composable
 fun BuyerProductCard(
     product: Product,
@@ -216,57 +244,143 @@ fun BuyerProductCard(
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            AsyncImage(
-                model = product.imagenUrl ?: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-                contentDescription = product.nombre,
-                contentScale = ContentScale.Crop,
+            // Imagen del producto desde Cloudinary
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-            )
-            Column(modifier = Modifier.padding(12.dp)) {
+                    .height(150.dp)
+            ) {
+                AsyncImage(
+                    model = product.imagenUrl,
+                    contentDescription = product.nombre,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                )
+
+                // Si no hay imagen, mostrar placeholder elegante
+                if (product.imagenUrl.isNullOrBlank()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        MainGradientStart.copy(alpha = 0.1f),
+                                        MainGradientEnd.copy(alpha = 0.2f)
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Image,
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp),
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                        )
+                    }
+                }
+
+                // Badge de stock en la esquina
+                if (product.stock == 0) {
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.9f)
+                        )
+                    ) {
+                        Text(
+                            text = "Agotado",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
+
+            Column(modifier = Modifier.padding(10.dp)) {
+                // Nombre del producto
                 Text(
                     text = product.nombre,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontSize = 13.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 16.sp
                 )
-                Text(
-                    text = product.sellerName ?: "Vendedor",
-                    fontSize = 11.sp,
-                    color = Color.Gray,
-                    maxLines = 1
-                )
-                Spacer(modifier = Modifier.height(4.dp))
                 
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Nombre de la tienda/vendedor con ícono de tienda
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Default.Storefront,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = product.sellerName ?: "Vendedor",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Precio + Botón de agregar al carrito
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$${product.precio}",
+                        text = "$${String.format("%,.2f", product.precio)}",
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Black,
-                        fontSize = 15.sp
+                        fontSize = 16.sp
                     )
                     
                     if (product.stock > 0) {
-                        IconButton(
+                        FilledIconButton(
                             onClick = onAddClick,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+                            modifier = Modifier.size(32.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
+                            Icon(
+                                Icons.Default.AddShoppingCart,
+                                contentDescription = "Agregar",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
                     } else {
-                        Text("Agotado", fontSize = 11.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                        Text(
+                            "Sin stock",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
@@ -353,18 +467,37 @@ fun CartCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = item.product.imagenUrl ?: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            // Imagen del producto en el carrito desde Cloudinary
+            Box(
                 modifier = Modifier
                     .size(70.dp)
                     .clip(RoundedCornerShape(12.dp))
-            )
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                AsyncImage(
+                    model = item.product.imagenUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                if (item.product.imagenUrl.isNullOrBlank()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Image,
+                            contentDescription = null,
+                            tint = Color.Gray.copy(alpha = 0.4f),
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.product.nombre, fontWeight = FontWeight.Bold, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("$${item.product.precio}", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                Text("$${String.format("%,.2f", item.product.precio)}", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                 Spacer(modifier = Modifier.height(6.dp))
                 
                 // Controladores de cantidad (+/-)
@@ -476,7 +609,12 @@ fun OrderCard(order: Order) {
             Spacer(modifier = Modifier.height(8.dp))
             
             Text("Fecha: ${order.createdAt ?: "Reciente"}", fontSize = 12.sp, color = Color.Gray)
-            Text("Valor Total: $${String.format("%.2f", order.total)}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(
+                "Valor Total: $${String.format("%.2f", order.total)}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
             
             if (order.idTransaccionEpayco != null) {
                 Spacer(modifier = Modifier.height(4.dp))
@@ -485,16 +623,20 @@ fun OrderCard(order: Order) {
             if (order.latitud != null && order.longitud != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Map, contentDescription = null, size = 12.dp, tint = Color.Gray)
+                    Icon(
+                        Icons.Default.Map,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = Color.Gray
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("GPS: ${String.format("%.4f", order.latitud)}, ${String.format("%.4f", order.longitud)}", fontSize = 11.sp, color = Color.Gray)
+                    Text(
+                        "GPS: ${String.format("%.4f", order.latitud)}, ${String.format("%.4f", order.longitud)}",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
                 }
             }
         }
     }
-}
-
-@Composable
-private fun Icon(imageVector: androidx.compose.ui.graphics.vector.ImageVector, contentDescription: String?, size: androidx.compose.ui.unit.Dp, tint: Color) {
-    Icon(imageVector = imageVector, contentDescription = contentDescription, modifier = Modifier.size(size), tint = tint)
 }
