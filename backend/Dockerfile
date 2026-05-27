@@ -14,8 +14,8 @@ RUN npm ci --only=production
 COPY . .
 
 # Expose the port that the app will run on.
-# Render automatically injects the PORT environment variable.
-EXPOSE 3000
+# Render automatically injects the PORT environment variable (usually 10000).
+EXPOSE 10000
 
 # Start the application using Node.js
 CMD ["node", "server.js"]
