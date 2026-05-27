@@ -1,5 +1,6 @@
 package com.example.ecomers.ui.seller
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ecomers.domain.model.Product
@@ -38,7 +39,7 @@ class SellerViewModel @Inject constructor(
     private val _selectedProductState = MutableStateFlow<ProductDetailState>(ProductDetailState.Idle)
     val selectedProductState: StateFlow<ProductDetailState> = _selectedProductState.asStateFlow()
 
-    // Estado del proceso de subida de imágenes (Cámara/Galería)
+    // Estado del proceso de subida de imágenes (Cloudinary)
     private val _imageUploadState = MutableStateFlow<ImageState>(ImageState.Idle)
     val imageUploadState: StateFlow<ImageState> = _imageUploadState.asStateFlow()
 
@@ -169,18 +170,18 @@ class SellerViewModel @Inject constructor(
     }
 
     /**
-     * Simula la subida de una foto capturada por la Cámara o Galería al servidor de imágenes.
-     * Retorna una URL pública para vincular al producto.
+     * Sube una imagen real seleccionada por el usuario a Cloudinary a través del backend.
+     * Retorna la URL pública de la imagen para vincular al producto.
      */
-    fun uploadProductImage() {
+    fun uploadProductImage(imageUri: Uri) {
         _imageUploadState.value = ImageState.Uploading
         viewModelScope.launch {
-            productRepository.uploadProductImage()
+            productRepository.uploadProductImage(imageUri)
                 .onSuccess { url ->
                     _imageUploadState.value = ImageState.Success(url)
                 }
                 .onFailure { error ->
-                    _imageUploadState.value = ImageState.Error(error.localizedMessage ?: "Fallo al subir imagen")
+                    _imageUploadState.value = ImageState.Error(error.localizedMessage ?: "Fallo al subir imagen a Cloudinary")
                 }
         }
     }

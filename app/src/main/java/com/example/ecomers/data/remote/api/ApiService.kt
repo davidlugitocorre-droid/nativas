@@ -1,6 +1,7 @@
 package com.example.ecomers.data.remote.api
 
 import com.example.ecomers.data.remote.model.*
+import okhttp3.MultipartBody
 import retrofit2.http.*
 
 /**
@@ -90,8 +91,11 @@ interface ApiService {
         @Path("id") id: Int
     ): MessageResponse
 
+    @Multipart
     @POST("api/products/upload")
-    suspend fun uploadProductImage(): ImageUploadResponse
+    suspend fun uploadProductImage(
+        @Part image: MultipartBody.Part
+    ): ImageUploadResponse
 
     // ==========================================
     // 4. ENDPOINTS DE COMPRAS Y ÓRDENES

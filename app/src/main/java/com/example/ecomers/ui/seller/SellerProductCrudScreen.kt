@@ -1,6 +1,9 @@
 package com.example.ecomers.ui.seller
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,7 +36,7 @@ import com.example.ecomers.ui.auth.mutableStateFlowOf
  * Formulario CRUD de Productos: SellerProductCrudScreen
  * 
  * MÓDULO 4: Permite al vendedor registrar un producto nuevo o editar uno existente,
- * vinculando imágenes mediante simulación ágil de cámara y galería.
+ * con subida real de imágenes a Cloudinary desde la galería del dispositivo.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,9 +54,23 @@ fun SellerProductCrudScreen(
     var stockText by remember { mutableStateFlowOf("") }
     var imagenUrl by remember { mutableStateFlowOf<String?>(null) }
 
+    // URI local de la imagen seleccionada (para preview inmediato antes de subir)
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
     val selectedProductState by sellerViewModel.selectedProductState.collectAsState()
     val productCrudState by sellerViewModel.productCrudState.collectAsState()
     val imageUploadState by sellerViewModel.imageUploadState.collectAsState()
+
+    // Lanzador de la galería del dispositivo para seleccionar imágenes
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            selectedImageUri = it
+            // Subir automáticamente a Cloudinary al seleccionar
+            sellerViewModel.uploadProductImage(it)
+        }
+    }
 
     // Cargar detalles de producto si estamos en modo edición
     LaunchedEffect(productId) {
@@ -64,6 +82,7 @@ fun SellerProductCrudScreen(
             precioText = ""
             stockText = ""
             imagenUrl = null
+            selectedImageUri = null
             sellerViewModel.clearImageState()
         }
     }
@@ -80,12 +99,12 @@ fun SellerProductCrudScreen(
         }
     }
 
-    // Escuchar el resultado de la subida de la imagen
+    // Escuchar el resultado de la subida de la imagen a Cloudinary
     LaunchedEffect(imageUploadState) {
         if (imageUploadState is ImageState.Success) {
             val url = (imageUploadState as ImageState.Success).imageUrl
             imagenUrl = url
-            Toast.makeText(context, "¡Imagen subida correctamente!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "¡Imagen subida a Cloudinary!", Toast.LENGTH_SHORT).show()
             sellerViewModel.clearImageState()
         } else if (imageUploadState is ImageState.Error) {
             Toast.makeText(context, (imageUploadState as ImageState.Error).message, Toast.LENGTH_LONG).show()
@@ -134,7 +153,7 @@ fun SellerProductCrudScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     
-                    // --- SECTOR DE IMAGEN PREMIUM ---
+                    // --- SECTOR DE IMAGEN PREMIUM CON CLOUDINARY ---
                     Text(
                         "Imagen del Producto",
                         fontSize = 14.sp,
@@ -149,12 +168,15 @@ fun SellerProductCrudScreen(
                             .height(180.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { sellerViewModel.uploadProductImage() },
+                            .clickable { galleryLauncher.launch("image/*") },
                         contentAlignment = Alignment.Center
                     ) {
-                        if (!imagenUrl.isNullOrBlank()) {
+                        // Mostrar imagen: preferir el URI local (preview rápido), luego la URL de Cloudinary
+                        val displayModel: Any? = selectedImageUri ?: imagenUrl
+
+                        if (displayModel != null) {
                             AsyncImage(
-                                model = imagenUrl,
+                                model = displayModel,
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
@@ -177,22 +199,41 @@ fun SellerProductCrudScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 if (imageUploadState is ImageState.Uploading) {
                                     CircularProgressIndicator()
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        "Subiendo a Cloudinary...",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 } else {
                                     Icon(
-                                        imageVector = Icons.Default.Image,
+                                        imageVector = Icons.Default.CloudUpload,
                                         contentDescription = null,
                                         tint = Color.Gray,
                                         modifier = Modifier.size(48.dp)
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        "Tocar para Capturar Foto (Simulado)",
+                                        "Tocar para seleccionar imagen",
                                         fontSize = 12.sp,
                                         color = Color.Gray
                                     )
                                 }
                             }
                         }
+                    }
+
+                    // Indicador de subida si hay imagen seleccionada pero aún está subiendo
+                    if (imageUploadState is ImageState.Uploading && selectedImageUri != null) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            "Subiendo imagen a Cloudinary...",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
 
                     // --- ENTRADAS DE FORMULARIO ---
@@ -257,7 +298,7 @@ fun SellerProductCrudScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        enabled = productCrudState !is ProductCrudState.Loading
+                        enabled = productCrudState !is ProductCrudState.Loading && imageUploadState !is ImageState.Uploading
                     ) {
                         if (productCrudState is ProductCrudState.Loading) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))

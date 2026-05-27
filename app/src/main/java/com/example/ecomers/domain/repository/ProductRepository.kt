@@ -1,5 +1,6 @@
 package com.example.ecomers.domain.repository
 
+import android.net.Uri
 import com.example.ecomers.domain.model.Product
 
 /**
@@ -53,8 +54,8 @@ interface ProductRepository {
     ): Result<String>
 
     /**
-     * Sube una imagen al servidor de almacenamiento.
-     * Retorna la URL pública de la imagen de manera segura.
+     * Sube una imagen a Cloudinary a través del backend.
+     * Retorna la URL pública de la imagen almacenada en la nube.
      */
-    suspend fun uploadProductImage(): Result<String>
+    suspend fun uploadProductImage(imageUri: Uri): Result<String>
 }

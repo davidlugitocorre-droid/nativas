@@ -9,10 +9,31 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'ecomers_super_secret_jwt_key_2026_antigravity';
+
+// Configuración de Cloudinary
+cloudinary.config({
+  cloud_name: 'nativas',
+  api_key: '471787828168955',
+  api_secret: 'i0eyGNmJd9Z1j0GBEHZwhfQvRVg'
+});
+
+// Configuración de Multer con Cloudinary Storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ecomers-products',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto' }]
+  }
+});
+const upload = multer({ storage: storage });
 
 // Middleware
 app.use(cors());
@@ -314,11 +335,18 @@ app.delete('/api/products/:id', authenticateToken, requireRole(['seller']), asyn
   }
 });
 
-// Subida de imagen simulada (Para retornar URLs aleatorias estéticas de Unsplash/LoremPicsum)
-app.post('/api/products/upload', authenticateToken, requireRole(['seller']), (req, res) => {
-  const randomId = Math.floor(Math.random() * 1000);
-  const mockUrl = `https://picsum.photos/id/${randomId}/500/500`;
-  res.json({ imageUrl: mockUrl });
+// Subida de imagen real a Cloudinary
+app.post('/api/products/upload', authenticateToken, requireRole(['seller']), upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se recibió ninguna imagen' });
+    }
+    // Multer-storage-cloudinary almacena el resultado en req.file.path
+    res.json({ imageUrl: req.file.path });
+  } catch (error) {
+    console.error('❌ Error al subir imagen a Cloudinary:', error);
+    res.status(500).json({ error: 'Error al subir imagen', details: error.message });
+  }
 });
 
 
