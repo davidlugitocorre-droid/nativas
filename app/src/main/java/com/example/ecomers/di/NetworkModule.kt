@@ -29,7 +29,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://127.0.0.1:3000/" // Dirección IP local (compatible con adb reverse en dispositivos físicos)
+    private const val BASE_URL = "https://lugo-ecommerce-backend.onrender.com/" // URL del backend en producción (Render)
 
     @Provides
     @Singleton
