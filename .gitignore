@@ -1,0 +1,23 @@
+# Gradle files
+.gradle/
+build/
+
+# Kotlin
+.kotlin/
+
+# Android Studio / IntelliJ / VS Code
+.idea/
+.vscode/
+*.iml
+local.properties
+
+# Log files
+*.log
+
+# Node.js backend dependencies
+backend/node_modules/
+backend/.env
+
+# OS files
+.DS_Store
+Thumbs.db
