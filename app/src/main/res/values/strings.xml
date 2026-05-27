@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HerbHopper-v1</string>
+    <string name="app_name">e-comers</string>
     <!-- Placeholder para Google Sign-In (Reemplazar con el valor real de google-services.json) -->
     <string name="default_web_client_id">your_web_client_id_here.apps.googleusercontent.com</string>
 
