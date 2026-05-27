@@ -19,9 +19,9 @@ const JWT_SECRET = 'ecomers_super_secret_jwt_key_2026_antigravity';
 
 // Configuración de Cloudinary
 cloudinary.config({
-  cloud_name: 'nativas',
-  api_key: '471787828168955',
-  api_secret: 'i0eyGNmJd9Z1j0GBEHZwhfQvRVg'
+  cloud_name: 'dnkvvzpk0',
+  api_key: '394123321559252',
+  api_secret: 'Ijxk0iTvAK8VPX0pEMxanDHqzUI'
 });
 
 // Configuración de Multer con Cloudinary Storage
