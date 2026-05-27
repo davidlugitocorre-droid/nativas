@@ -43,7 +43,7 @@ fun RegisterScreen(
     var fullName by remember { mutableStateFlowOf("") }
     var email by remember { mutableStateFlowOf("") }
     var password by remember { mutableStateFlowOf("") }
-    var selectedRole by remember { mutableStateFlowOf("comprador") } // Rol por defecto
+    var selectedRole by remember { mutableStateFlowOf("buyer") } // Rol por defecto
     var showPassword by remember { mutableStateFlowOf(false) }
 
     val registerState by authViewModel.registerState.collectAsState()
@@ -179,13 +179,13 @@ fun RegisterScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { selectedRole = "comprador" },
+                            .clickable { selectedRole = "buyer" },
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (selectedRole == "comprador") MaterialTheme.colorScheme.primaryContainer 
+                            containerColor = if (selectedRole == "buyer") MaterialTheme.colorScheme.primaryContainer 
                                              else MaterialTheme.colorScheme.surfaceVariant
                         ),
-                        border = if (selectedRole == "comprador") BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null
+                        border = if (selectedRole == "buyer") BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null
                     ) {
                         Column(
                             modifier = Modifier
@@ -196,14 +196,14 @@ fun RegisterScreen(
                             Icon(
                                 Icons.Default.Person, 
                                 contentDescription = null,
-                                tint = if (selectedRole == "comprador") MaterialTheme.colorScheme.primary else Color.Gray
+                                tint = if (selectedRole == "buyer") MaterialTheme.colorScheme.primary else Color.Gray
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 "Comprador", 
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (selectedRole == "comprador") MaterialTheme.colorScheme.onPrimaryContainer else Color.Gray
+                                color = if (selectedRole == "buyer") MaterialTheme.colorScheme.onPrimaryContainer else Color.Gray
                             )
                         }
                     }
@@ -212,13 +212,13 @@ fun RegisterScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { selectedRole = "vendedor" },
+                            .clickable { selectedRole = "seller" },
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (selectedRole == "vendedor") MaterialTheme.colorScheme.primaryContainer 
+                            containerColor = if (selectedRole == "seller") MaterialTheme.colorScheme.primaryContainer 
                                              else MaterialTheme.colorScheme.surfaceVariant
                         ),
-                        border = if (selectedRole == "vendedor") BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null
+                        border = if (selectedRole == "seller") BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null
                     ) {
                         Column(
                             modifier = Modifier
@@ -229,14 +229,14 @@ fun RegisterScreen(
                             Icon(
                                 Icons.Default.Storefront, 
                                 contentDescription = null,
-                                tint = if (selectedRole == "vendedor") MaterialTheme.colorScheme.primary else Color.Gray
+                                tint = if (selectedRole == "seller") MaterialTheme.colorScheme.primary else Color.Gray
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 "Vendedor", 
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (selectedRole == "vendedor") MaterialTheme.colorScheme.onPrimaryContainer else Color.Gray
+                                color = if (selectedRole == "seller") MaterialTheme.colorScheme.onPrimaryContainer else Color.Gray
                             )
                         }
                     }
